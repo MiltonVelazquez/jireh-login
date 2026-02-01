@@ -7,22 +7,23 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import jireh.login.security.filters.JwtAuthenticationFilter;
 import jireh.login.security.filters.JwtAuthorizationFilter;
 import jireh.login.security.jwt.JwtUtils;
 import jireh.login.service.UserDetailsServiceImpl;
 
-import static org.springframework.security.config.Customizer.withDefaults;
+import java.util.Arrays;
+import java.util.List;
 
+import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Configuration
@@ -38,7 +39,6 @@ public class SecurityConfig {
     @Autowired
     JwtAuthorizationFilter authorizationFilter;
 
-
     @Bean
     SecurityFilterChain securityFilterChain (HttpSecurity httpSecurity, AuthenticationManager authenticationManager) throws Exception{
 
@@ -47,9 +47,11 @@ public class SecurityConfig {
         jwtAuthenticationFilter.setFilterProcessesUrl("/login");
 
         return httpSecurity
+                .cors(withDefaults()) 
                 .csrf(config -> config.disable())
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/users/user/register").permitAll();
+                    auth.requestMatchers("/login").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> {
@@ -60,16 +62,24 @@ public class SecurityConfig {
                 .build();
     }
 
-    // @Bean
-    // UserDetailsService userDetailsService(){
-    //     InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-    //     manager.createUser(User.withUsername("jkasdfkjcom"))
-    //         .password("1234")
-    //         .roles()
-    //         .build();
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        configuration.setAllowedOrigins(Arrays.asList(
+            "https://eddc0f65-a17f-4af9-9774-b722606f3449-00-2zbw4m3gak2ba.worf.replit.dev",
+            "https://jireh-frontend-chi.vercel.app/"
+        ));
+        
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
-    //     return manager;
-    // }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean
     PasswordEncoder passwordEncoder(){
@@ -83,6 +93,4 @@ public class SecurityConfig {
             .passwordEncoder(passwordEncoder)
             .and().build();
     }
-
-    
 }
