@@ -24,6 +24,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jireh.login.models.UserEntity;
 import jireh.login.security.jwt.JwtUtils;
+import jireh.login.repositories.UserRepository;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
