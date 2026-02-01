@@ -25,6 +25,7 @@ import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import jireh.login.repositories.UserRepository;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -39,10 +40,13 @@ public class SecurityConfig {
     @Autowired
     JwtAuthorizationFilter authorizationFilter;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Bean
     SecurityFilterChain securityFilterChain (HttpSecurity httpSecurity, AuthenticationManager authenticationManager) throws Exception{
 
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtUtils);
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtUtils, userRepository);
         jwtAuthenticationFilter.setAuthenticationManager(authenticationManager);
         jwtAuthenticationFilter.setFilterProcessesUrl("/login");
 
