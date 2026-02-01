@@ -28,9 +28,11 @@ import jireh.login.security.jwt.JwtUtils;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
     private JwtUtils jwtUtils;
+    private UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtUtils jwtUtils){
+    public JwtAuthenticationFilter(JwtUtils jwtUtils, UserRepository userRepository){
         this.jwtUtils = jwtUtils;
+        this.userRepository = userRepository;
     }
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -64,6 +66,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         User user = (User) authResult.getPrincipal();
         String token = jwtUtils.generateAccesToken(user.getUsername());
+
+        UserEntity userEntity = userRepository.findByEmail(user.getUsername())
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado tras autenticación"));
         
         List<String> roles = user.getAuthorities()
                 .stream()
@@ -72,18 +77,19 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         response.addHeader("Authorization", token);
         Map<String, Object> httpResponse = new HashMap<>();
-        httpResponse.put("id: ", id);
-        httpResponse.put("token: ", token);
-        httpResponse.put("Email: ", user.getUsername());
-        httpResponse.put("Roles: ", roles);
-        httpResponse.put("Message: ", "Autenticacion correcta");
-        
+        httpResponse.put("token", token);
+        httpResponse.put("id", userEntity.getId());
+        httpResponse.put("name", userEntity.getName());
+        httpResponse.put("lastname", userEntity.getLastname());
+        httpResponse.put("number", userEntity.getNumber());
+        httpResponse.put("email", userEntity.getEmail());
+        httpResponse.put("roles", roles);
+        httpResponse.put("message", "Autenticación correcta");
+
         response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
         response.setStatus(HttpStatus.OK.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().flush();
-
-        super.successfulAuthentication(request, response, chain, authResult);
     }
     
 }
