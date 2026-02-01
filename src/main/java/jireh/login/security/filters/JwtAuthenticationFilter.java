@@ -72,6 +72,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         response.addHeader("Authorization", token);
         Map<String, Object> httpResponse = new HashMap<>();
+        httpResponse.put("id: ", id)
         httpResponse.put("token: ", token);
         httpResponse.put("Email: ", user.getUsername());
         httpResponse.put("Roles: ", roles);
