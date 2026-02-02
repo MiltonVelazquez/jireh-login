@@ -18,4 +18,6 @@ public interface UserRepository extends CrudRepository<UserEntity, Long>{
   @Query("select u from UserEntity u where u.email = ?1")
   Optional<UserEntity> getEmail(String email);
 
+  Optional<UserEntity> findByResetToken(String token);
+
 }

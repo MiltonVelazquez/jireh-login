@@ -56,6 +56,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/users/user/register").permitAll();
                     auth.requestMatchers("/login").permitAll();
+                    auth.requestMatchers("/users/user/check-email").permitAll();
+                    auth.requestMatchers("/auth/forgot-password").permitAll();   
+                    auth.requestMatchers("/auth/reset-password").permitAll();  
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> {

@@ -4,11 +4,13 @@ import jireh.login.controller.request.RegisterDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,6 +44,10 @@ public class UserController{
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterDTO registerDTO){
+
+    if(userRepository.findByEmail(registerDTO.getEmail()).isPresent()){
+      return ResponseEntity.badRequest().body("Error: El email ya está en uso.");
+    }
 
     Set<RoleEntity> roles = registerDTO.getRoles().stream()
       .map(roleName -> roleRepository.findByName(roleName)
@@ -83,4 +90,42 @@ public class UserController{
       return ResponseEntity.ok(results);
   }
 
+  @PutMapping("/update/{id}")
+  @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+  public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody RegisterDTO updateData) {
+    return userRepository.findById(id).map(user -> {
+        
+      // Solo actualizamos si el dato no es nulo ni está vacío
+      if (updateData.getName() != null && !updateData.getName().isBlank()) {
+        user.setName(updateData.getName());
+      }
+        
+      if (updateData.getLastname() != null && !updateData.getLastname().isBlank()) {
+       user.setLastname(updateData.getLastname());
+      }
+        
+      if (updateData.getNumber() != null && !updateData.getNumber().isBlank()) {
+        user.setNumber(updateData.getNumber());
+      }
+        
+      if (updateData.getEmail() != null && !updateData.getEmail().isBlank()) {
+        user.setEmail(updateData.getEmail());
+      }
+
+      userRepository.save(user);
+      return ResponseEntity.ok("Perfil actualizado con éxito");
+    }).orElse(ResponseEntity.notFound().build());
+  }
+
+  @PutMapping("/update-password/{id}")
+  @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+  public ResponseEntity<?> updatePassword(@PathVariable Long id, @RequestBody Map<String, String> passwords) {
+    String newPassword = passwords.get("password");
+        
+    return userRepository.findById(id).map(user -> {
+      user.setPassword(passwordEncoder.encode(newPassword));
+      userRepository.save(user);
+        return ResponseEntity.ok("Contraseña actualizada con éxito");
+    }).orElse(ResponseEntity.notFound().build());
+  }
 }
