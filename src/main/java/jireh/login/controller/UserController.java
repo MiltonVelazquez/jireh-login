@@ -113,7 +113,7 @@ public class UserController{
       }
 
       userRepository.save(user);
-      return ResponseEntity.ok("Perfil actualizado con éxito");
+      return ResponseEntity.ok("message", "Perfil actualizado con éxito");
     }).orElse(ResponseEntity.notFound().build());
   }
 
