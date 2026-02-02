@@ -60,6 +60,8 @@ public class SecurityConfig {
                     auth.requestMatchers("/auth/forgot-password").permitAll();   
                     auth.requestMatchers("/auth/reset-password").permitAll();  
                     auth.anyRequest().authenticated();
+                    // TEMPORAL: Solo para probar si es un problema de permisos de ruta
+                    auth.requestMatchers("/users/user/update/**").permitAll();
                 })
                 .sessionManagement(session -> {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
