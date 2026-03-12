@@ -87,10 +87,26 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         httpResponse.put("roles", roles);
         httpResponse.put("message", "Autenticación correcta");
 
-        response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
         response.setStatus(HttpStatus.OK.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        String jsonResponse = new ObjectMapper().writeValueAsString(httpResponse);
+        response.getWriter().write(jsonResponse);
         response.getWriter().flush();
     }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                          AuthenticationException failed) throws IOException, ServletException {
+    
+        Map<String, Object> httpResponse = new HashMap<>();
+        httpResponse.put("message", "Credenciales incorrectas. Verifique su correo o contraseña.");
+        httpResponse.put("error", failed.getMessage());
+
+        response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
+        response.setStatus(HttpStatus.UNAUTHORIZED.value()); // Devolvemos 401 explícito
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().flush();
+}
     
 }
