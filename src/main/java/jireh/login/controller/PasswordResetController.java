@@ -45,7 +45,7 @@ public class PasswordResetController {
 
     try {
         String token = resetService.createPasswordResetToken(email);
-        emailService.sendResetPasswordEmail(email, token);
+        //emailService.sendResetPasswordEmail(email, token);
         
         return ResponseEntity.ok(Map.of("message", "Se ha enviado un enlace de recuperación a tu bandeja de entrada."));
     } catch (Exception e) {
