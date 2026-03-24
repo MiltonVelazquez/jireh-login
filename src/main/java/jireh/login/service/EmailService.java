@@ -33,10 +33,9 @@ public class EmailService {
 
             helper.setText(htmlContent, true);
             mailSender.send(message);
-        } catch (MessagingException e) 
+        } catch (MessagingException e) {
             e.printStackTrace(); 
             throw new RuntimeException("Error al enviar el correo: " + e.getMessage());
         }
     }
-}
 }
